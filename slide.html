@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Shou Takenaka">
+  <title>フロント開発をがんばるためにGulpに入門してみた</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="revealjs/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="revealjs/css/theme/white.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'revealjs/css/print/pdf.css' : 'revealjs/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="revealjs/lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">フロント開発をがんばるためにGulpに入門してみた</h1>
+  <h2 class="author">Shou Takenaka</h2>
+  <h3 class="date">Nov 24, 2015</h3>
+</section>
+
+<section id="table-of-contents" class="slide level1">
+<h1>Table of Contents</h1>
+<ul>
+<li>Gulpとは</li>
+<li>Gulpの基本</li>
+<li>Gruntとの比較</li>
+<li>まとめ</li>
+</ul>
+</section>
+<section id="gulpとは" class="slide level1">
+<h1>Gulpとは</h1>
+<ul>
+<li>Node.jsで動くビルドツール (The streaming build system)</li>
+</ul>
+</section>
+<section id="ビルドツール" class="slide level1">
+<h1>ビルドツール</h1>
+<ul>
+<li>システムをリリースするのに必要なタスク（コンパイル、リンク、静的解析、テスト、デプロイ、etc...）の 実行をアシストしてくれるツール</li>
+<li>GNU Make、Ant、Gradle、MSBuild、Rake、Grunt、Gulp、etc...</li>
+</ul>
+</section>
+<section id="タスク定義と実行" class="slide level1">
+<h1>タスク定義と実行</h1>
+<ul>
+<li>タスクはgulpfile.jsに定義</li>
+<li>JavaScriptで書く</li>
+<li>gulpコマンドでタスク実行</li>
+</ul>
+</section>
+<section id="タスク定義と実行-1" class="slide level1">
+<h1>タスク定義と実行</h1>
+<p>gulpfile.js</p>
+<pre><code>var gulp = require(&quot;gulp&quot;);
+
+gulp.task(&quot;hello&quot;, function() {
+    console.log(&quot;Hello Gulp !!&quot;);
+});
+
+gulp.task(&quot;default&quot;, [&quot;hello&quot;]);</code></pre>
+<p>実行すると</p>
+<pre><code>$ gulp
+Hello Gulp !!</code></pre>
+</section>
+<section id="gulp-api-1" class="slide level1">
+<h1>Gulp API (1)</h1>
+<ul>
+<li><strong>gulp.task(name, deps, fn)</strong>: タスク定義
+<ul>
+<li>name: タスク名</li>
+<li>deps: 依存タスク</li>
+<li>fn: タスクの処理内容</li>
+</ul></li>
+</ul>
+</section>
+<section id="少し本格的なタスク" class="slide level1">
+<h1>少し本格的なタスク</h1>
+<pre><code>var gulp = require(&quot;gulp&quot;);
+var uglify = require(&quot;gulp-uglify&quot;);
+
+gulp.task(&quot;default&quot;, function() {
+  gulp.src(&quot;foo.js&quot;)
+    .pipe(uglify())
+    .pipe(gulp.dest(&quot;dest&quot;));
+});</code></pre>
+</section>
+<section id="pipe" class="slide level1">
+<h1>pipe?</h1>
+<ul>
+<li>どこかで見たことある</li>
+<li><strong>|</strong> シェルのこれ</li>
+<li><code>gulp.src() | uglify() | gulp.dest()</code> のようなイメージ</li>
+</ul>
+</section>
+<section id="gulpの動作イメージ" class="slide level1">
+<h1>Gulpの動作イメージ</h1>
+<figure>
+<img src="assets/images/gulp_process.png" alt="" />
+</figure>
+</section>
+<section id="gulpの動作イメージ-1" class="slide level1">
+<h1>Gulpの動作イメージ</h1>
+<ul>
+<li>プラグインをpipeでチェイン</li>
+<li>pipeで徐々に加工していって目的の出力を得る</li>
+<li>*UIX的な考え方で処理を書ける</li>
+<li>Node.js のStream API</li>
+</ul>
+</section>
+<section id="gulp-api-2" class="slide level1">
+<h1>Gulp API (2)</h1>
+<ul>
+<li><strong>gulp.src(globs)</strong>: 入力ファイルを取得
+<ul>
+<li>globs: 入力ファイルのパターン（src/**/*.jsみたいに書ける）</li>
+</ul></li>
+</ul>
+</section>
+<section id="gulp-api-3" class="slide level1">
+<h1>Gulp API (3)</h1>
+<ul>
+<li><strong>gulp.dest(path)</strong>: ファイルへ書き込み
+<ul>
+<li>path: 出力先ディレクトリ</li>
+</ul></li>
+</ul>
+</section>
+<section id="変更監視" class="slide level1">
+<h1>変更監視</h1>
+<ul>
+<li>ファイルの変更監視もできる</li>
+<li>特定のパターンにマッチするファイルが変更されたら
+<ul>
+<li>特定のタスクを実行</li>
+<li>コールバック関数を実行</li>
+</ul></li>
+</ul>
+</section>
+<section id="変更監視-1" class="slide level1">
+<h1>変更監視</h1>
+<pre><code>gulp.watch(&quot;src/**/*.js&quot;, [&quot;build&quot;]);
+
+gulp.watch(&quot;src/**/*.js&quot;, function(event) {
+    console.log(&quot;File &quot; + event.path + &quot; was changed.&quot;);
+});</code></pre>
+</section>
+<section id="gulp-api-4" class="slide level1">
+<h1>Gulp API (4)</h1>
+<ul>
+<li><strong>gulp.watch(glob, tasks), gulp.watch(glob, fn)</strong>: 変更監視
+<ul>
+<li>glob: 監視対象のファイルのパターン</li>
+<li>tasks: 変更時に実行したいタスクリスト</li>
+<li>fn: 変更時に実行したいコールバック関数</li>
+</ul></li>
+</ul>
+</section>
+<section id="基本的には以上" class="slide level1">
+<h1>基本的には以上</h1>
+<ul>
+<li>4つのGulp API+プラグインでタスクを作っていく</li>
+<li>Webアプリの開発に必要になりそうなものは大抵プラグインがある<br />
+ <strong>→ 作る前に探す</strong></li>
+</ul>
+</section>
+<section id="gruntとの比較" class="slide level1">
+<h1>Gruntとの比較</h1>
+<ul>
+<li>同じくNode.jsで動くビルドツール Grunt と比較してみる</li>
+</ul>
+</section>
+<section id="基本的な書き方" class="slide level1">
+<h1>基本的な書き方</h1>
+<p>Gruntfile.js</p>
+<pre><code>module.exports = function(grunt) {
+    grunt.registerTask(&quot;hello&quot;, &quot;description&quot;, function() {
+        grunt.log.writeln(&quot;Hello Grunt !!&quot;);
+    });
+ 
+    grunt.registerTask(&quot;default&quot;, [&quot;hello&quot;]);
+};</code></pre>
+</section>
+<section id="ちょっと複雑な例" class="slide level1">
+<h1>ちょっと複雑な例</h1>
+<pre><code>module.exports = function(grunt) {
+    grunt.loadNpmTasks(&quot;grunt-contrib-uglify&quot;);
+    grunt.initConfig({
+        uglify: {
+            target1: {
+                src: &quot;foo.js&quot;,
+                dest: &quot;foo.min.js&quot;
+            }
+        }
+    });
+    grunt.registerTask(&quot;default&quot;, [&quot;uglify&quot;]);
+};</code></pre>
+</section>
+<section id="gruntの動作イメージ" class="slide level1">
+<h1>Gruntの動作イメージ</h1>
+<figure>
+<img src="assets/images/grunt_process.png" alt="" />
+</figure>
+</section>
+<section id="gruntの動作イメージ-1" class="slide level1">
+<h1>Gruntの動作イメージ</h1>
+<ul>
+<li>プラグインで入力ファイルを処理して、結果をファイルに出力</li>
+<li>処理結果をテンポラリファイルに出力し、後続タスクでそれを読み込んで別の処理... を繰り返して、最終目的の出力を得る</li>
+<li>プラグインの動作は設定で調整</li>
+</ul>
+</section>
+<section id="gulpとgruntの比較" class="slide level1">
+<h1>GulpとGruntの比較</h1>
+<ul>
+<li>コードベースのGulp、設定ベースのGrunt
+<ul>
+<li>Gulpはプラグインを組み合わせて「どうやって目的の出力を得るか」をコードで記述</li>
+<li>Gruntはプラグインに対して「何から何を出力するか」を設定ベースで記述</li>
+</ul></li>
+</ul>
+</section>
+<section id="gulpとgruntの比較-1" class="slide level1">
+<h1>GulpとGruntの比較</h1>
+<ul>
+<li>プラグインの粒度が違う
+<ul>
+<li>Gulpのプラグインは単機能
+<ul>
+<li>Gulp plugin guideline says &quot;plugin should only do <strong>one thing</strong>&quot;.</li>
+<li>プラグインを組み合わせてタスクを作る</li>
+</ul></li>
+<li>Gruntはプラグイン＝タスク</li>
+</ul></li>
+</ul>
+</section>
+<section id="gulpとgruntの比較-2" class="slide level1">
+<h1>GulpとGruntの比較</h1>
+<ul>
+<li>Gruntは遅いらしいけど本当？
+<ul>
+<li>Gruntでプラグインをつないで処理する場合、プラグイン毎にディスクI/Oが発生</li>
+<li>Gulpはインメモリで処理できるのでその分早い</li>
+<li>ただ、トータルでどっちが早いかは状況(使ってるプラグインなど)による</li>
+<li>Grunt next version (0.5) では、Gulpと同じようにディスクI/Oなしでタスクの入出力をつなげるようになる</li>
+</ul></li>
+</ul>
+</section>
+<section id="gulpとgruntの比較-3" class="slide level1">
+<h1>GulpとGruntの比較</h1>
+<ul>
+<li>先発のGruntの方がユーザーベースが大きい？
+<ul>
+<li>Gulp: 1,595,761 DL in last month</li>
+<li>Grunt: 1,495,772 DL in last month</li>
+</ul></li>
+</ul>
+</section>
+<section id="結局どっちを使う" class="slide level1">
+<h1>結局どっちを使う？</h1>
+<ul>
+<li>できることはどっちも変わらない</li>
+<li>一般論でどっちがいい、とは言い難い
+<ul>
+<li>コードベースと設定ベース、どっちがプロジェクトに適しているかという話</li>
+</ul></li>
+</ul>
+</section>
+<section id="我々はどっちを使う" class="slide level1">
+<h1>我々はどっちを使う？</h1>
+<ul>
+<li>コードベースで手続きが書いてある方が、どういう順番で何をやっているのかわかりやすい</li>
+<li>単機能の処理をパイプでつないでいくという思想がしっくりくる</li>
+<li>必要そうなプラグインは一通り揃ってる</li>
+</ul>
+<p>↓</p>
+<p><strong>Gulp使います</strong></p>
+</section>
+    </div>
+  </div>
+
+  <script src="revealjs/lib/js/head.min.js"></script>
+  <script src="revealjs/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Vertical centering of slides
+        center: false,
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'revealjs/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'revealjs/plugin/zoom-js/zoom.js', async: true },
+          { src: 'revealjs/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>
