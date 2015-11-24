@@ -1,0 +1,5 @@
+.vagrant
+*.sw?
+node_modules
+slide.html
+Vagrantfile
